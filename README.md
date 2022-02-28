@@ -1,0 +1,31 @@
+# roadmap
+- groundwork ⚙️
+  - make a skeleton plugin ⚙️
+    - decide what library/language if any to use ⚙️
+    - settings should exist
+  - learn how to modify messages on load
+  - learn how to store data
+  - learn how to replicate/create discord internals
+    - replies
+    - popups
+  - learn how to modify messages before send
+    - check translate plugin?
+  - choose name?
+- plugin features
+  - fetch PK data on message load
+    - cache it
+    - implement ratelimit/failure retry
+  - patch message
+    - patch member
+      - clicking on member/avatar shows member popup
+        - with member details
+        - options to show system/profile
+      - member color
+    - patch system text
+      - clicking on system shows system popup
+        - link to profile
+      - system color
+    - patch reply
+      - replace reply embed with native reply text
+  - patch replies
+    - when replying to a pk message, either add member ping or auto-react with ❗
