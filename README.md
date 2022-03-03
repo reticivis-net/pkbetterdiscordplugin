@@ -1,9 +1,9 @@
 # roadmap
 - groundwork ⚙️
-  - make a skeleton plugin ⚙️
-    - decide what library/language if any to use ⚙️
-    - settings should exist
-  - learn how to modify messages on load
+  - make a skeleton plugin ✔️
+    - decide what library/language if any to use ✔️
+    - settings should exist ✔️
+  - learn how to modify messages on load ⚙️
   - learn how to store data
   - learn how to replicate/create discord internals
     - replies

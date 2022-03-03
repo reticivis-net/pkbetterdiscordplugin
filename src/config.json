@@ -1,0 +1,42 @@
+{
+  "info": {
+    "name": "PKBD",
+    "author": "melody",
+    "authorId": "214511018204725248",
+    "version": "0.0.3",
+    "description": "PluralKit BetterDiscord Plugin",
+    "github": "https://github.com/HexCodeFFF/pkbetterdiscordplugin"
+  },
+  "changelog": [
+    {
+      "title": "New Stuff",
+      "items": [
+        "Added more settings",
+        "Added changelog"
+      ]
+    },
+    {
+      "title": "Bugs Squashed",
+      "type": "fixed",
+      "items": [
+        "React errors on reload"
+      ]
+    },
+    {
+      "title": "Improvements",
+      "type": "improved",
+      "items": [
+        "Improvements to the base plugin"
+      ]
+    },
+    {
+      "title": "On-going",
+      "type": "progress",
+      "items": [
+        "More modals and popouts being added",
+        "More classes and modules being added"
+      ]
+    }
+  ],
+  "main": "index.js"
+}

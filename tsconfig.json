@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": false,
+    "removeComments": false,
+    "sourceMap": false,
+    "target": "es2021",
+    "outDir": "plugin",
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "moduleResolution": "Node"
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

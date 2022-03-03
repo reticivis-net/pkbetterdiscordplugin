@@ -10,5 +10,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="@types/bandagedbd__bdapi" level="application" />
     <orderEntry type="library" name="ZLibrary" level="application" />
+    <orderEntry type="library" name="ts-external-references" level="project" />
   </component>
 </module>
