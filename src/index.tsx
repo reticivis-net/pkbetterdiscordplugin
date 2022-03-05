@@ -1,6 +1,9 @@
 /// <reference types="zerespluginlibrarytypings"/>
 
 
+// if anyone is looking at this code for examples of the typings, ill be honest,
+// im not entirely sure how to write this in JS or if this even the best way to do it in TS
+// but webstorm and tsc are fine with it
 module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
     const {LeakyBucket} = require('ts-leaky-bucket' /* zlibrarybuilder embed */);
     const {Logger, Patcher, WebpackModules} = Library;
