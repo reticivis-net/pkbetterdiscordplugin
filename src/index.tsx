@@ -23,21 +23,24 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
             super();
         }
 
-        PKPopout(messageid: number | string) {
+        PKPopout(membername: string, membercolor: string, memberavatar: string, systemname: string, memberdescription: string, accountid: string | number) {
+            // take PK data and make nice looking popout
             // modified version of the user popout, dynamically inject react classes
-            return <div aria-label="MediaForge" className={popoutClasses.userPopout} role="dialog" tabIndex={-1}
+
+            // TODO: make "view profile" link to profile
+            return <div aria-label={membername} className={popoutClasses.userPopout} role="dialog" tabIndex={-1}
                         aria-modal="true"
                         style={{width: '300px'}}>
                 <div className={popoutClasses.headerNormal}>
                     <div className={`${bannerClasses.banner} ${bannerClasses.popoutBanner}`}
-                         style={{backgroundColor: 'rgb(203, 100, 191)'}}/>
+                         style={{backgroundColor: membercolor}}/>
                 </div>
                 <div
                     className={`${popoutStyleClasses.avatarWrapperNormal} ${popoutStyleClasses.avatarWrapper} ${popoutStyleClasses.avatarPositionNormal} ${popoutStyleClasses.clickable}`}
                     role="button" tabIndex={0}>
                     <div className={popoutStyleClasses.avatarHoverTarget}>
                         <div className={`${popoutStyleClasses.avatar} ${wrapperClasses.wrapper}`}
-                             role="img" aria-label="MediaForge, Online"
+                             role="img" aria-label={membername}
                              aria-hidden="false"
                              style={{width: '80px', height: '80px'}}>
                             <svg width="92" height="80" viewBox="0 0 92 80"
@@ -49,7 +52,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                                 <foreignObject mask="url(#pk-popout-avatar-mask)" height="80"
                                                width="80" y="0" x="0">
                                     <div className={wrapperClasses.avatarStack}><img
-                                        src="https://cdn.discordapp.com/avatars/780570413767983122/cea2ae060e52c6b38b08f83fe9dfaaa2.webp?size=100"
+                                        src={memberavatar}
                                         alt=" " className={wrapperClasses.avatar} aria-hidden="true"/></div>
                                 </foreignObject>
                                 <rect x="60" y="60" width="16" height="16" fill="transparent" aria-hidden="true"
@@ -60,18 +63,18 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                     <svg width="80" height="80" className={popoutStyleClasses.avatarHint} viewBox="0 0 80 80">
                         <foreignObject x="0" y="0" width="80" height="80" overflow="visible"
                                        mask="url(#pk-popout-avatar-mask)">
-                            <div className={popoutStyleClasses.avatarHintInner}>View Profile</div>
+                            <div className={popoutStyleClasses.avatarHintInner}>View Account</div>
                         </foreignObject>
                     </svg>
                 </div>
                 <div className={popoutStyleClasses.headerTop} style={{paddingTop: '56px'}}>
                     <div className={popoutStyleClasses.headerText}>
                         <h3 className={`${popoutStyleClasses.nickname} ${textClasses.base} ${sizeClasses.size20}`}>
-                            some plural member
+                            {membername}
                         </h3>
                         <div className={`${popoutStyleClasses.headerTagWithNickname} ${nameTagClasses.nameTag}`}>
                             <span className={`${nameTagClasses.username} ${popoutStyleClasses.headerTagUsernameBase}`}>
-                                some plural system
+                                {systemname}
                             </span>
                         </div>
                     </div>
@@ -85,8 +88,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                             About Me
                         </h3>
                         <div className={`${popoutStyleClasses.aboutMeBody} ${markupClasses.markup} ${clamped}`}>
-                            some plural description<br/>
-                            this message has ID {messageid}!
+                            {memberdescription}
                         </div>
                     </div>
                 </div>
@@ -97,15 +99,14 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
             // debugger
             const BotTag = WebpackModules.getByProps("BotTagTypes");
             const BotTagTypes = BotTag.default.Types || BotTag.BotTagTypes;
-            const UserPopoutBody = WebpackModules.getModule(m => m.default.displayName === "UserPopoutBody", true)
             const MessagePack = WebpackModules.getByProps("BaseMessageHeader")
-            const popoutClasses = WebpackModules.getByProps("userPopout");
-            const textClasses = WebpackModules.getByProps("muted")
             Patcher.after(MessagePack, "default", ((thisObject, args, returnValue) => {
                 Logger.debug(thisObject, args, returnValue)
                 // override popup
                 const renderPopout = () => {
-                    return this.PKPopout(thisObject.props.message.id);
+                    return this.PKPopout("member name", "#ff00ff",
+                        "https://www.guinnessworldrecords.com/Images/finley%202_tcm25-620066.jpg",
+                        "system name", "member desc", "0");
                 }
 
                 returnValue.props.avatar.props.renderPopout = renderPopout
