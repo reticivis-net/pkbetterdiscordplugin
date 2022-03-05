@@ -10,7 +10,8 @@
       "es6",
       "dom"
     ],
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "jsx": "react"
   },
   "include": [
     "src/**/*"

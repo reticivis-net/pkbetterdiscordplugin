@@ -3,23 +3,113 @@
 module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
 
     const {Logger, Patcher, WebpackModules} = Library;
+    const {React} = BdApi;
+
+    // react internal classes are distributed over a bunch of webpack modules
+    // get on initialization cause they take a fair bit to get cause theres like idk 8k modules?
+    const popoutClasses = WebpackModules.getByProps("userPopout");
+    const bannerClasses = WebpackModules.getByProps("banner");
+    const popoutStyleClasses = WebpackModules.getByProps("aboutMeTitle");
+    const wrapperClasses = WebpackModules.getByProps("avatarStack");
+    const sizeClasses = WebpackModules.getByProps("size10");
+    const textClasses = WebpackModules.getByProps("uppercase");
+    const nameTagClasses = WebpackModules.getByProps("nameTag", "username", "bot");
+    const scrollerClasses = WebpackModules.getByProps("thin");
+    const markupClasses = WebpackModules.getByProps("markup");
+    const clamped = WebpackModules.getByProps("clamped").clamped;
 
     return class PKBD extends Plugin {
         constructor() {
             super();
         }
 
+        PKPopout(messageid: number | string) {
+            // modified version of the user popout, dynamically inject react classes
+            return <div aria-label="MediaForge" className={popoutClasses.userPopout} role="dialog" tabIndex={-1}
+                        aria-modal="true"
+                        style={{width: '300px'}}>
+                <div className={popoutClasses.headerNormal}>
+                    <div className={`${bannerClasses.banner} ${bannerClasses.popoutBanner}`}
+                         style={{backgroundColor: 'rgb(203, 100, 191)'}}/>
+                </div>
+                <div
+                    className={`${popoutStyleClasses.avatarWrapperNormal} ${popoutStyleClasses.avatarWrapper} ${popoutStyleClasses.avatarPositionNormal} ${popoutStyleClasses.clickable}`}
+                    role="button" tabIndex={0}>
+                    <div className={popoutStyleClasses.avatarHoverTarget}>
+                        <div className={`${popoutStyleClasses.avatar} ${wrapperClasses.wrapper}`}
+                             role="img" aria-label="MediaForge, Online"
+                             aria-hidden="false"
+                             style={{width: '80px', height: '80px'}}>
+                            <svg width="92" height="80" viewBox="0 0 92 80"
+                                 className={`${wrapperClasses.mask} ${wrapperClasses.svg}`}
+                                 aria-hidden="true">
+                                <mask id="pk-popout-avatar-mask" width="80" height="80">
+                                    <circle cx="40" cy="40" r="40" fill="white"/>
+                                </mask>
+                                <foreignObject mask="url(#pk-popout-avatar-mask)" height="80"
+                                               width="80" y="0" x="0">
+                                    <div className={wrapperClasses.avatarStack}><img
+                                        src="https://cdn.discordapp.com/avatars/780570413767983122/cea2ae060e52c6b38b08f83fe9dfaaa2.webp?size=100"
+                                        alt=" " className={wrapperClasses.avatar} aria-hidden="true"/></div>
+                                </foreignObject>
+                                <rect x="60" y="60" width="16" height="16" fill="transparent" aria-hidden="true"
+                                      className={wrapperClasses.pointerEvents}/>
+                            </svg>
+                        </div>
+                    </div>
+                    <svg width="80" height="80" className={popoutStyleClasses.avatarHint} viewBox="0 0 80 80">
+                        <foreignObject x="0" y="0" width="80" height="80" overflow="visible"
+                                       mask="url(#pk-popout-avatar-mask)">
+                            <div className={popoutStyleClasses.avatarHintInner}>View Profile</div>
+                        </foreignObject>
+                    </svg>
+                </div>
+                <div className={popoutStyleClasses.headerTop} style={{paddingTop: '56px'}}>
+                    <div className={popoutStyleClasses.headerText}>
+                        <h3 className={`${popoutStyleClasses.nickname} ${textClasses.base} ${sizeClasses.size20}`}>
+                            some plural member
+                        </h3>
+                        <div className={`${popoutStyleClasses.headerTagWithNickname} ${nameTagClasses.nameTag}`}>
+                            <span className={`${nameTagClasses.username} ${popoutStyleClasses.headerTagUsernameBase}`}>
+                                some plural system
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div className={`${popoutClasses.body} ${scrollerClasses.thin} ${scrollerClasses.scrollerBase}`}
+                     dir="ltr"
+                     style={{overflow: 'hidden scroll', paddingRight: '8px'}}>
+                    <div className={popoutStyleClasses.divider}/>
+                    <div className={popoutStyleClasses.aboutMeSection} style={{marginBottom: '0'}}>
+                        <h3 className={`${popoutStyleClasses.aboutMeTitle} ${textClasses.base} ${sizeClasses.size12} ${textClasses.muted} ${textClasses.uppercase}`}>
+                            About Me
+                        </h3>
+                        <div className={`${popoutStyleClasses.aboutMeBody} ${markupClasses.markup} ${clamped}`}>
+                            some plural description<br/>
+                            this message has ID {messageid}!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
         onStart() {
-            Logger.log("Started");
-            debugger
+            // debugger
             const BotTag = WebpackModules.getByProps("BotTagTypes");
             const BotTagTypes = BotTag.default.Types || BotTag.BotTagTypes;
-            // const MessagePack = WebpackModules.getByProps("BaseMessageHeader")
-            const MessagePack = BdApi.findModule(m => m?.default?.toString().indexOf("showTimestampOnHover") > -1);
-            Logger.log(BotTag, BotTagTypes, MessagePack, Patcher)
-            Patcher.instead(BotTag, "default", ((args) => {
-                console.log(args)
-                return "BALLSBALLSBALLS"
+            const UserPopoutBody = WebpackModules.getModule(m => m.default.displayName === "UserPopoutBody", true)
+            const MessagePack = WebpackModules.getByProps("BaseMessageHeader")
+            const popoutClasses = WebpackModules.getByProps("userPopout");
+            const textClasses = WebpackModules.getByProps("muted")
+            Patcher.after(MessagePack, "default", ((thisObject, args, returnValue) => {
+                Logger.debug(thisObject, args, returnValue)
+                // override popup
+                const renderPopout = () => {
+                    return this.PKPopout(thisObject.props.message.id);
+                }
+
+                returnValue.props.avatar.props.renderPopout = renderPopout
+                returnValue.props.username.props.children[1].props.children[0].props.renderPopout = renderPopout;
             }))
         }
 

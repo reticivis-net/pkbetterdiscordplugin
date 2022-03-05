@@ -3,11 +3,11 @@
   - make a skeleton plugin ✔️
     - decide what library/language if any to use ✔️
     - settings should exist ✔️
-  - learn how to modify messages on load ⚙️
+  - learn how to modify messages on load ✔️
   - learn how to store data
   - learn how to replicate/create discord internals
     - replies
-    - popups
+    - popups ⚙️
   - learn how to modify messages before send
     - check translate plugin?
   - choose name?
