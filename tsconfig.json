@@ -11,7 +11,8 @@
       "dom"
     ],
     "moduleResolution": "Node",
-    "jsx": "react"
+    "jsx": "react",
+    "module": "commonjs"
   },
   "include": [
     "src/**/*"

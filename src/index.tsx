@@ -1,7 +1,8 @@
 /// <reference types="zerespluginlibrarytypings"/>
 
-module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
 
+module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
+    const {LeakyBucket} = require('ts-leaky-bucket' /* zlibrarybuilder embed */);
     const {Logger, Patcher, WebpackModules} = Library;
     const {React} = BdApi;
 
@@ -21,6 +22,18 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
     return class PKBD extends Plugin {
         constructor() {
             super();
+        }
+
+        // iirc the PK dev said this isnt actually implemented but it's good practice and futureproofing
+        // my testing concludes that the API has some undocumented ratelimit so its better to stick with the official
+        bucket = new LeakyBucket({
+            capacity: 2,
+            interval: 1,
+        });
+        baseurl = "https://api.pluralkit.me/v2/"
+
+        pkapirequestmessage(messageid: string | number) {
+
         }
 
         PKPopout(membername: string, membercolor: string, memberavatar: string, systemname: string, memberdescription: string, accountid: string | number) {

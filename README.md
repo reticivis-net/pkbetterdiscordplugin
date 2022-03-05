@@ -5,14 +5,15 @@
     - settings should exist ✔️
   - learn how to modify messages on load ✔️
   - learn how to store data
-  - learn how to replicate/create discord internals
+  - learn how to replicate/create discord internals ⚙️
     - replies
-    - popups ⚙️
+    - popups ✔️
   - learn how to modify messages before send
     - check translate plugin?
   - choose name?
 - plugin features
   - fetch PK data on message load
+    - fetch PK data sanely with rate limits ⚙️
     - cache it
     - implement ratelimit/failure retry
   - patch message
