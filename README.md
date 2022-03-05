@@ -30,3 +30,4 @@
       - replace reply embed with native reply text
   - patch replies
     - when replying to a pk message, either add member ping or auto-react with ❗
+  - SETTINGS
