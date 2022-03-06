@@ -12,16 +12,16 @@
     - check translate plugin?
   - choose name?
 - plugin features
-  - fetch PK data on message load
-    - fetch PK data sanely with rate limits ⚙️
+  - fetch PK data on message load ⚙️
+    - fetch PK data sanely with rate limits ✔️
     - cache it
     - implement ratelimit/failure retry
-  - patch message
-    - patch member
+  - patch message ⚙️
+    - patch member ⚙️
       - clicking on member/avatar shows member popup
         - with member details
         - options to show system/profile
-      - member color
+      - member color ⚙️
     - patch system text
       - clicking on system shows system popup
         - link to profile
