@@ -18,7 +18,7 @@
     "copyfiles": "^2.4.1",
     "typescript": "^4.5.5",
     "zerespluginlibrarytypings": "github:HexCodeFFF/zerespluginlibrarytypings",
-    "zlibrarybuilder": "^1.2.0"
+    "zlibrarybuilder": "file:../ZLibraryBuilder"
   },
   "defaultConfig": {
     "pluginFolder": "./plugin",
@@ -26,6 +26,5 @@
     "addInstallScript": true
   },
   "dependencies": {
-    "ts-leaky-bucket": "^1.1.1"
   }
 }

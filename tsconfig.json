@@ -4,7 +4,7 @@
     "noEmitOnError": false,
     "removeComments": false,
     "sourceMap": false,
-    "target": "es6",
+    "target": "ES2017",
     "outDir": "plugin",
     "lib": [
       "es6",

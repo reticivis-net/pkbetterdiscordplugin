@@ -5,7 +5,6 @@
 // im not entirely sure how to write this in JS or if this even the best way to do it in TS
 // but webstorm and tsc are fine with it
 module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
-    const {LeakyBucket} = require('ts-leaky-bucket' /* zlibrarybuilder embed */);
     const {Logger, Patcher, WebpackModules} = Library;
     const {React} = BdApi;
 
@@ -21,7 +20,11 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
     const scrollerClasses = WebpackModules.getByProps("thin");
     const markupClasses = WebpackModules.getByProps("markup");
     const clamped = WebpackModules.getByProps("clamped").clamped;
-
+    const sleep = (ms: number) => {
+        return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+        });
+    }
     return class PKBD extends Plugin {
         constructor() {
             super();
@@ -29,13 +32,55 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
 
         // iirc the PK dev said this isnt actually implemented but it's good practice and futureproofing
         // my testing concludes that the API has some undocumented ratelimit so its better to stick with the official
-        bucket = new LeakyBucket({
-            capacity: 2,
-            interval: 1,
-        });
-        baseurl = "https://api.pluralkit.me/v2/"
+        bucket_drip_capacity = 2
+        bucket_drip_rate = 1
+        bucket: any[] = []
 
-        pkapirequestmessage(messageid: string | number) {
+        plugin_active = false
+
+        async bucketdrip() {
+            // running in background
+            while (this.plugin_active) {
+                // take the first n (bucket_drip_capacity) promises and resolve them which unblocks them
+                this.bucket.slice(0, this.bucket_drip_capacity).forEach((m) => {
+                    m.resolve();
+                })
+                // remove them from the list
+                this.bucket = this.bucket.slice(2);
+                // wait
+                await sleep(this.bucket_drip_rate * 1000)
+            }
+        }
+
+        async waitforbucket() {
+            // js this my behated
+            let tbucket = this.bucket;
+            // create a promise and give its resolve func to the bucket
+            let p = new Promise(function (resolve, reject) {
+                tbucket.push({resolve: resolve, reject: reject});
+            });
+            // the bucket will call the resolve func when ready
+            return await p;
+        }
+
+        baseurl = "https://api.pluralkit.me/v2"
+
+        async pkapirequestmessage(messageid: string | number) {
+            // wait for ratelimit to be safe
+            await this.waitforbucket()
+            // fetch and respond
+
+            const response = await fetch(`${this.baseurl}/messages/${messageid}`)
+            if (response.ok) {
+                return await response.json()
+            } else {
+                if (response.status === 404) {
+                    return undefined
+                } else {
+                    Logger.err(`PK server responded with status ${response.status}`, await response.text())
+                    throw new Error(`PK server responded with status ${response.status}`);
+                }
+            }
 
         }
 
@@ -112,27 +157,47 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
         }
 
         onStart() {
-            // debugger
+            // start the bucket, the check should stop the thing from running twice
+            if (!this.plugin_active) {
+                this.plugin_active = true
+                this.bucketdrip()
+            }
             const BotTag = WebpackModules.getByProps("BotTagTypes");
             const BotTagTypes = BotTag.default.Types || BotTag.BotTagTypes;
             const MessagePack = WebpackModules.getByProps("BaseMessageHeader")
             Patcher.after(MessagePack, "default", ((thisObject, args, returnValue) => {
-                Logger.debug(thisObject, args, returnValue)
-                // override popup
-                const renderPopout = () => {
-                    return this.PKPopout("member name", "#ff00ff",
-                        "https://www.guinnessworldrecords.com/Images/finley%202_tcm25-620066.jpg",
-                        "system name", "member desc", "0");
-                }
+                const auth = returnValue.props.message.author;
+                const webhook = auth.bot && auth.discriminator === "0000" && !auth.system && !auth.verified;
+                if (webhook) {
+                    // override popup
+                    const renderPopout = () => {
+                        return this.PKPopout("member name", "#ff00ff",
+                            "https://www.guinnessworldrecords.com/Images/finley%202_tcm25-620066.jpg",
+                            "system name", "member desc", "0");
+                    }
 
-                returnValue.props.avatar.props.renderPopout = renderPopout
-                returnValue.props.username.props.children[1].props.children[0].props.renderPopout = renderPopout;
+                    returnValue.props.avatar.props.renderPopout = renderPopout
+                    returnValue.props.username.props.children[1].props.children[0].props.renderPopout = renderPopout;
+                    // returnValue.props.username.props.children[1].props.children[0].props.author.nick = "banger"
+                    this.pkapirequestmessage(returnValue.props.message.id).then(r => {
+                        // discord oh so kindly gives us an HTML id.
+                        // once we get to this callback, returnValue is no longer able to modify anything so we gotta refetch from the page
+                        // @ts-ignore
+                        let usernameprops = document.getElementById(returnValue.props.usernameSpanId).__reactFiber$.memoizedProps.children.props.children[1].props.children[0].props;
+                        if (r.member.color) {
+                            usernameprops.author.colorString = `#${r.member.color}`;
+                        } else {
+                            usernameprops.author.colorString = "#ff0000"
+                        }
+                    })
+                }
             }))
         }
 
         onStop() {
             Logger.log("Stopped");
             Patcher.unpatchAll();
+            this.plugin_active = false
         }
     }
 }
