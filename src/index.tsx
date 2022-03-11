@@ -21,6 +21,9 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
     const markupClasses = WebpackModules.getByProps("markup");
     const clamped = WebpackModules.getByProps("clamped").clamped;
     const ProfileModals = WebpackModules.getByProps("openUserProfileModal");
+    const Popout = WebpackModules.getByProps("LazyPopout");
+    const renderUserGuildPopout = WebpackModules.getByDisplayName("renderUserGuildPopout");
+    const Clickable = WebpackModules.getByDisplayName("Clickable");
     const sleep = (ms: number) => {
         return new Promise((resolve) => {
             setTimeout(resolve, ms);
@@ -124,10 +127,25 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
         }
 
 
-        PKPopout(membername: string, membercolor: string, memberavatar: string, systemname: string, memberdescription: string, accountid: string | number, guildid: string | number) {
+        PKPopout(membername: string, membercolor: string, memberavatar: string, systemname: string,
+                 memberdescription: string, accountid: string | number, guildid: string | number,
+                 messageobject: object) {
+
+            function rendertruepopout(p) {
+                return renderUserGuildPopout(p, messageobject)
+            }
+
+            function handleevent(t) {
+                // might be good
+                t.preventDefault();
+                t.stopPropagation();
+            }
+
 
             // opens acc modal dynamically, praise allah its so easy
-            function openmodal() {
+            function openmodal(t) {
+                handleevent(t)
+                // gaming
                 ProfileModals.openUserProfileModal(
                     {
                         userId: accountid.toString(),
@@ -138,6 +156,34 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                     })
             }
 
+            const popoutinsides = <Clickable>
+                <div className={popoutStyleClasses.avatarHoverTarget}>
+                    <div className={`${popoutStyleClasses.avatar} ${wrapperClasses.wrapper}`}
+                         role="img" aria-label={membername}
+                         aria-hidden="false"
+                         style={{width: '80px', height: '80px'}}>
+                        <svg width="92" height="80" viewBox="0 0 92 80"
+                             className={`${wrapperClasses.mask} ${wrapperClasses.svg}`}
+                             aria-hidden="true">
+                            <mask id="pk-popout-avatar-mask" width="80" height="80">
+                                <circle cx="40" cy="40" r="40" fill="white"/>
+                            </mask>
+                            <foreignObject mask="url(#pk-popout-avatar-mask)" height="80"
+                                           width="80" y="0" x="0">
+                                <div className={wrapperClasses.avatarStack}><img
+                                    src={memberavatar}
+                                    alt=" " className={wrapperClasses.avatar} aria-hidden="true"/></div>
+                            </foreignObject>
+                            <rect x="60" y="60" width="16" height="16" fill="transparent" aria-hidden="true"
+                                  className={wrapperClasses.pointerEvents}/>
+                        </svg>
+                    </div>
+                </div>
+            </Clickable>
+            const popout = <Popout.default renderPopout={rendertruepopout} shouldShow={false} position={"right"}
+                                           onRequestClose={handleevent}>
+                {e => popoutinsides}
+            </Popout.default>
             // take PK data and make nice looking popout
             // modified version of the user popout, dynamically inject react classes
             // yes i could create the react elemetns but its just a pain
@@ -151,28 +197,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                 <div
                     className={`${popoutStyleClasses.avatarWrapperNormal} ${popoutStyleClasses.avatarWrapper} ${popoutStyleClasses.avatarPositionNormal} ${popoutStyleClasses.clickable}`}
                     role="button" tabIndex={0}>
-                    <div className={popoutStyleClasses.avatarHoverTarget} onClickCapture={openmodal}>
-                        <div className={`${popoutStyleClasses.avatar} ${wrapperClasses.wrapper}`}
-                             role="img" aria-label={membername}
-                             aria-hidden="false"
-                             style={{width: '80px', height: '80px'}}>
-                            <svg width="92" height="80" viewBox="0 0 92 80"
-                                 className={`${wrapperClasses.mask} ${wrapperClasses.svg}`}
-                                 aria-hidden="true">
-                                <mask id="pk-popout-avatar-mask" width="80" height="80">
-                                    <circle cx="40" cy="40" r="40" fill="white"/>
-                                </mask>
-                                <foreignObject mask="url(#pk-popout-avatar-mask)" height="80"
-                                               width="80" y="0" x="0">
-                                    <div className={wrapperClasses.avatarStack}><img
-                                        src={memberavatar}
-                                        alt=" " className={wrapperClasses.avatar} aria-hidden="true"/></div>
-                                </foreignObject>
-                                <rect x="60" y="60" width="16" height="16" fill="transparent" aria-hidden="true"
-                                      className={wrapperClasses.pointerEvents}/>
-                            </svg>
-                        </div>
-                    </div>
+                    {popout}
                     <svg width="80" height="80" className={popoutStyleClasses.avatarHint} viewBox="0 0 80 80">
                         <foreignObject x="0" y="0" width="80" height="80" overflow="visible"
                                        mask="url(#pk-popout-avatar-mask)">
@@ -232,7 +257,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                                 pkmemberdata['color'] || 'fff',
                                 pkmemberdata['avatar_url'] || "https://cdn.discordapp.com/embed/avatars/0.png",
                                 pkmemberdata["systemname"], pkmemberdata['description'] || "No description",
-                                pkmemberdata["accid"], args[0].guildId);
+                                pkmemberdata["accid"], args[0].guildId, returnValue.props.message);
                         } else {
                             return origpopout(...pargs)
                         }
