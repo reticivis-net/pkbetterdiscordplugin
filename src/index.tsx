@@ -20,8 +20,6 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
     const scrollerClasses = WebpackModules.getByProps("thin");
     const markupClasses = WebpackModules.getByProps("markup");
     const clamped = WebpackModules.getByProps("clamped").clamped;
-    const messageClasses = WebpackModules.getByProps("edited");
-    const botClasses = WebpackModules.getByProps("botText");
     const ProfileModals = WebpackModules.getByProps("openUserProfileModal");
     const sleep = (ms: number) => {
         return new Promise((resolve) => {
@@ -142,6 +140,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
 
             // take PK data and make nice looking popout
             // modified version of the user popout, dynamically inject react classes
+            // yes i could create the react elemetns but its just a pain
             return <div aria-label={membername} className={popoutClasses.userPopout} role="dialog" tabIndex={-1}
                         aria-modal="true"
                         style={{width: '300px'}}>
@@ -259,7 +258,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                         })
                         // HTML element, react is annoying to work with
                         let header = document.getElementById(`message-username-${returnValue.props.message.id}`);
-                        if (header === undefined) return
+                        if (!header) return
                         if (header.hasAttribute("PKBDedited")) return
                         let usernameelem = (header.children[0] as HTMLElement);
                         let servernick;
@@ -275,7 +274,9 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                             servernick = usernameelem.innerText;
                         }
                         // edit username appearance
-                        usernameelem.innerHTML = `<span style="color: #${r.member.color || 'fff'}">${servernick} <span style="color: #${r.system.color || 'fff'}">${r.system.tag || ""}</span></span>`;
+                        usernameelem.innerHTML = `${servernick} <span style="color: #${r.system.color || 'fff'}">${r.system.tag || ""}</span>`;
+                        // underline isnt colored if i dont do it like this sadly
+                        usernameelem.style.color = "#" + (r.member.color || 'fff');
                         (header.children[1] as HTMLElement).firstElementChild.innerHTML = "PK";
                         // prevent unneeded re-editing which can cause unexpected behavior
                         header.setAttribute("PKBDedited", "")
