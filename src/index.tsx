@@ -30,6 +30,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
     const bottagclasses = WebpackModules.getByProps("botTagRegular");
     const embedclasses = WebpackModules.getByProps("embedFull");
     const MessageInterface = WebpackModules.getByProps("jumpToMessage");
+    // for PKReplyHTML()
     window["pkjumptomessage"] = MessageInterface.jumpToMessage;
 
     const sleep = (ms: number) => {
@@ -326,6 +327,7 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                             const ref = MessageStore.getMessage(m.groups["channel"], m.groups["message"])
                             if (ref) {
                                 // make an empty object the default value so getting props of it doesn't fail
+                                // TODO: get PK member info to properly color/tag PK replies to PK messages
                                 const refmember = MemberStore.getMember(ref.guild.id, ref.author.id) || {};
                                 // remove embed
                                 // TODO: naive, rreally should be smarter bout this and make sre im actually removing the reply embed

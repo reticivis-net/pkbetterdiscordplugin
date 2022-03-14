@@ -5,8 +5,8 @@
     - settings should exist ✔️
   - learn how to modify messages on load ✔️
   - learn how to store data
-  - learn how to replicate/create discord internals ⚙️
-    - replies
+  - learn how to replicate/create discord internals ✔️
+    - replies ✔️
     - popups ✔️
   - learn how to modify messages before send
     - check translate plugin?
@@ -24,12 +24,13 @@
         - with member details  ✔️
         - options to show system/profile  ✔️
       - member color ✔️
-    - patch system text
+    - patch system text ✔️
       - clicking on system shows system popup
         - link to profile
-      - system color
-    - patch reply
-      - replace reply embed with native reply text
+      - system color ✔️
+    - patch reply ✔️
+      - replace reply embed with native reply text ✔️
   - patch replies
     - when replying to a pk message, either add member ping or auto-react with ❗
+    - replies to PK members should be properly tagged and colored ⚙️
   - SETTINGS
