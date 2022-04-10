@@ -10,9 +10,13 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
 
     // react internal classes are distributed over a bunch of webpack modules
     // get on initialization cause they take a fair bit to get cause theres like idk 8k modules?
-    const popoutClasses = WebpackModules.getByProps("userPopout");
+
+    // the class i need is inside a module that has all the keys of a different bigger module so i have to do this shit
+    const popoutClasses = WebpackModules.getModule(f => {
+        return f.hasOwnProperty("userPopout") && !(f.hasOwnProperty("menu"))
+    }, true);
     const bannerClasses = WebpackModules.getByProps("banner");
-    const popoutStyleClasses = WebpackModules.getByProps("aboutMeTitle");
+    const popoutStyleClasses = WebpackModules.getByProps("userInfoTitle");
     const wrapperClasses = WebpackModules.getByProps("avatarStack");
     const sizeClasses = WebpackModules.getByProps("size10");
     const textClasses = WebpackModules.getByProps("uppercase");
@@ -206,8 +210,9 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                 </div>
                 <div
                     className={`${popoutStyleClasses.avatarWrapperNormal} ${popoutStyleClasses.avatarWrapper} ${popoutStyleClasses.avatarPositionNormal} ${popoutStyleClasses.clickable}`}
-                    role="button" tabIndex={0}>
-                    <div className={popoutStyleClasses.avatarHoverTarget} onClickCapture={openmodal}>
+                    role="button" tabIndex={0} onClickCapture={openmodal} onClick={openmodal}>
+                    <div className={popoutStyleClasses.avatarHoverTarget} onClickCapture={openmodal}
+                         onClick={openmodal}>
                         <div className={`${popoutStyleClasses.avatar} ${wrapperClasses.wrapper}`}
                              role="img" aria-label={membername}
                              aria-hidden="false"
@@ -252,11 +257,11 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                      dir="ltr"
                      style={{overflow: 'hidden scroll', paddingRight: '8px'}}>
                     <div className={popoutStyleClasses.divider}/>
-                    <div className={popoutStyleClasses.aboutMeSection} style={{marginBottom: '0'}}>
-                        <h3 className={`${popoutStyleClasses.aboutMeTitle} ${textClasses.base} ${sizeClasses.size12} ${textClasses.muted} ${textClasses.uppercase}`}>
+                    <div className={popoutStyleClasses.userInfoSection} style={{marginBottom: '0'}}>
+                        <h3 className={`${popoutStyleClasses.userInfoTitle} ${textClasses.base} ${sizeClasses.size12} ${textClasses.muted} ${textClasses.uppercase}`}>
                             About Me
                         </h3>
-                        <div className={`${popoutStyleClasses.aboutMeBody} ${markupClasses.markup} ${clamped}`}>
+                        <div className={`${popoutStyleClasses.userInfoBody} ${markupClasses.markup} ${clamped}`}>
                             {memberdescription}
                         </div>
                     </div>
@@ -397,15 +402,19 @@ module.exports = (Plugin: typeof BasePlugin, Library: typeof PluginLibrary) => {
                 //  duplicated code is cringe
 
                 let pkmemberdata = {};
-                const auth = args[0].referencedMessage.message.author;
+
+                const auth = Utilities.getNestedProp(args, "0.referencedMessage.message.author");
+                if (!auth) {
+                    return
+                }
                 const webhook = auth.bot && auth.discriminator === "0000" && !auth.system && !auth.verified;
-                if (webhook) {
+                if (webhook && auth) {
 
                     // override popup
                     const origpopout = returnValue.props.children[0].props.renderPopout.bind({});
                     const renderPopout = (...pargs) => {
                         if (Object.keys(pkmemberdata).length > 0) {
-                            return this.pkpopoutfrommemberdata(pkmemberdata, args[0].guildId)
+                            return this.pkpopoutfrommemberdata(pkmemberdata, args[0].channel.guild_id)
                         } else {
                             return origpopout(...pargs)
                         }
